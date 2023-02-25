@@ -4,7 +4,7 @@ import torchvision
 from torchvision.datasets import ImageFolder
 
 # Set directories for each folder of images
-data_dirs = '/Users/kantg/OneDrive/Desktop/CMU/BMS Capstone/trial_pro_images/'
+data_dirs = '/jet/home/gkant/BMS1/ASO_Xstals_FInal_Time_Point/'
 
 # Define a function to transform the images
 transform = torchvision.transforms.Compose([
