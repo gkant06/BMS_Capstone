@@ -239,27 +239,6 @@ from torchvision.transforms import ToTensor
 from keras.datasets import mnist
 from sklearn.datasets import fetch_openml
 
-
-def get_rotated_mnist(rotation_range: Tuple[int]) -> Tuple[torch.Tensor]:
-    #wget www.di.ens.fr/~lelarge/MNIST.tar.gz
-    #tar -zxvf MNIST.tar.gz
-    #mnist_trainset = datasets.MNIST(
-    #    root='.', train=True, download=False, transform=None)
-    #mnist_trainset = mnist.load_data()
-    mnist = fetch_openml('mnist_784')
-
-    X, y = mnist.data, mnist.target
-    imstack_train_r = torch.zeros_like(mnist_trainset, dtype=torch.float32)
-    labels, angles = [], []
-    for i, (im, lbl) in enumerate(mnist_trainset):
-        theta = torch.randint(*rotation_range, (1,)).float()
-        im = im.rotate(theta.item(), resample=Image.BICUBIC)
-        imstack_train_r[i] = ToTensor()(im)
-        labels.append(lbl)
-        angles.append(torch.deg2rad(theta))
-    imstack_train_r /= imstack_train_r.max()
-    return imstack_train_r, tt(labels), tt(angles)
-
 def load_training_set(path):
     data = []
     print(len(os.listdir(dir_path)))
