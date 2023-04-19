@@ -205,4 +205,3 @@ print('Weighted-averaged AUC-ROC score:', auc_roc_weighted)
 # custom AUC = 0.8799
 #    vgg AUC = 0.9
 # resnet AUC = 0.61
-
