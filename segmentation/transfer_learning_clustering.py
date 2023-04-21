@@ -1,5 +1,6 @@
 # Clustering using a transfer learning approach. A CNN (VGG16) is used to extract features. This is followed
-# by dimensionality reduction using PCA. Then k-means clustering is done and clusters are visualized.
+# by dimensionality reduction using PCA (linear) and UMAP(non-linear). Then k-means/DBSCAN clustering is done 
+#and clusters are visualized.
 
 
 # for loading/processing the images  
@@ -9,13 +10,20 @@ from keras.applications.vgg16 import preprocess_input
 from keras.applications.vgg16 import VGG16 
 from keras.models import Model
 from sklearn.cluster import KMeans
+from sklearn.cluster import DBSCAN
 from sklearn.decomposition import PCA
+import umap
+import umap.plot
 import os
 import numpy as np
 import matplotlib.pyplot as plt
 from random import randint
 import pandas as pd
 import pickle
+import seaborn as sns
+from sklearn.pipeline import Pipeline
+import os
+
 
 path = '/jet/home/gkant/mAb1_20007#/output_images'
 print(path)
@@ -54,48 +62,72 @@ def extract_features(file, model):
 data = {}
 p = '/jet/home/gkant/mAb1_20007#/'
 
-# lop through each image in the dataset
+# loop through each image in the dataset
 for img in imgs:
-    # try to extract the features and update the dictionary
-    try:
         feat = extract_features(img,model)
         data[img] = feat
-    # if something fails, save the extracted features as a pickle file (optional)
-    except:
-        with open(p,'wb') as file:
-            pickle.dump(data,file)
-          
- 
+
 # get a list of the filenames
 filenames = np.array(list(data.keys()))
 
 # get a list of just the features
 feat = np.array(list(data.values()))
 
-# reshape so that there are 210 samples of 4096 vectors
+# reshape
 feat = feat.reshape(-1,4096)
+print(feat.shape)
 
 
-# reduce the amount of dimensions in the feature vector
-pca = PCA(n_components=100, random_state=22)
-pca.fit(feat)
-x = pca.transform(feat)
+# Define the pipeline
+pipeline = Pipeline([
+    ('pca', PCA(n_components=2, random_state=22)),
+    ('umap_mapper', umap.UMAP(n_components=2, random_state=42)),
+    ('kmeans_cluster', KMeans(n_clusters=5,random_state=22)),
+    ('dbscan_cluster', DBSCAN(min_samples = 5))
+])
 
-# cluster feature vectors
-kmeans = KMeans(n_clusters=4,random_state=22)
-kmeans.fit(x)
+# Fit the pipeline to the feature vectors
+pipeline.fit(feat)
 
-# create a scatter plot of the reduced feature vectors, colored by their respective cluster labels
-plt.scatter(x[:, 0], x[:, 1], c=kmeans.labels_)
+# Get the reduced feature vectors from PCA and UMAP
+pca_out = pipeline.named_steps['pca'].fit_transform(feat)
+umap_out = pipeline.named_steps['umap_mapper'].fit_transform(feat)
 
-# add title and labels to the plot
-plt.title("Clustering Results")
-plt.xlabel("Principal Component 1")
-plt.ylabel("Principal Component 2")
+# Get the KMeans cluster labels for PCA and UMAP reduced feature vectors
+pca_kmeans_labels = pipeline.named_steps['kmeans_cluster'].fit_predict(pca_out)
+umap_kmeans_labels = pipeline.named_steps['kmeans_cluster'].fit_predict(umap_out)
 
-# show the plot
-plt.show()
+# Get the DBSCAN cluster labels for PCA and UMAP reduced feature vectors
+pca_dbscan_labels = pipeline.named_steps['dbscan_cluster'].fit_predict(pca_out)
+umap_dbscan_labels = pipeline.named_steps['dbscan_cluster'].fit_predict(umap_out)
 
+# create plots directory if it does not exist
+if not os.path.exists('/jet/home/gkant/mAb1_20007#/plots'):
+    os.makedirs('/jet/home/gkant/mAb1_20007#/plots')
+
+# save PCA/kmeans plot
+plt.figure(figsize=(10, 8))
+sns.scatterplot(x=pca_out[:, 0], y=pca_out[:, 1], hue=pca_kmeans_labels)
+plt.savefig('/jet/home/gkant/mAb1_20007#/plots/pca_kmeans.png', dpi=300, bbox_inches='tight')
+
+# save UMAP/kmeans plot
+plt.figure(figsize=(10, 8))
+sns.scatterplot(x=umap_out[:, 0], y=umap_out[:, 1], hue=umap_kmeans_labels)
+plt.savefig('/jet/home/gkant/mAb1_20007#/plots/umap_kmeans.png', dpi=300, bbox_inches='tight')
+
+# save PCA/DBSCAN plot
+plt.figure(figsize=(10, 8))
+sns.scatterplot(x=pca_out[:, 0], y=pca_out[:, 1], hue=pca_dbscan_labels)
+plt.savefig('/jet/home/gkant/mAb1_20007#/plots/pca_dbscan.png', dpi=300, bbox_inches='tight')
+
+# save UMAP/DBSCAN plot
+plt.figure(figsize=(10, 8))
+sns.scatterplot(x=umap_out[:, 0], y=umap_out[:, 1], hue=umap_dbscan_labels)
+plt.savefig('/jet/home/gkant/mAb1_20007#/plots/umap_dbscan.png', dpi=300, bbox_inches='tight')
+
+     
+
+'''
 # function that lets you view a cluster (based on cluster label)        
 def view_cluster(cluster):
     plt.figure(figsize = (25,25));
@@ -112,20 +144,46 @@ def view_cluster(cluster):
         img = np.array(img)
         plt.imshow(img)
         plt.axis('off')
-        
-   
-# To identify no. of clusters using elbow method
-#sse = []
-#list_k = list(range(3, 10))
+'''       
+'''
+# To identify no. of clusters using elbow method (pca)
+pca = PCA(n_components = 2)
+pca_out = pca.fit_transform(feat)
 
-#for k in list_k:
-#    km = KMeans(n_clusters=k, random_state=22)
-#    km.fit(x)
+sse = []
+list_k = list(range(2, 30))
+
+for k in list_k:
+    km = KMeans(n_clusters=k, random_state=22)
+    km.fit(pca_out)
     
-#    sse.append(km.inertia_)
+    sse.append(km.inertia_)
 
 # Plot sse against k
-#plt.figure(figsize=(6, 6))
-#plt.plot(list_k, sse)
-#plt.xlabel(r'Number of clusters *k*')
-#plt.ylabel('Sum of squared distance');
+plt.figure(figsize=(6, 6))
+plt.plot(list_k, sse)
+plt.xlabel(r'Number of clusters *k*')
+plt.ylabel('Sum of squared distance')
+plt.savefig('/jet/home/gkant/mAb1_20007#/plots/pca_kmeans_elbow_plt.png', dpi=300, bbox_inches='tight')
+
+# To identify no. of clusters using elbow method (umap)
+mapper = umap.UMAP(n_components=2)
+umap_out = pca.fit_transform(feat)
+
+sse = []
+list_k = list(range(2, 30))
+
+for k in list_k:
+    km = KMeans(n_clusters=k, random_state=22)
+    km.fit(umap_out)
+    
+    sse.append(km.inertia_)
+
+# Plot sse against k
+plt.figure(figsize=(6, 6))
+plt.plot(list_k, sse)
+plt.xlabel(r'Number of clusters *k*')
+plt.ylabel('Sum of squared distance')
+plt.savefig('/jet/home/gkant/mAb1_20007#/plots/umap_kmeans_elbow_plt.png', dpi=300, bbox_inches='tight')
+
+'''
