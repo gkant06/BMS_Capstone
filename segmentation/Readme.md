@@ -7,7 +7,7 @@ Extract images from video clips.
 
 Step 2:
 Create 'ref' and 'test' folders with the images.
-- ref: Select 3-10 images
+- ref: Select 3-10 images based on total number of images
 - test: All images
 
 Step 3:
