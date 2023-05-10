@@ -19,4 +19,19 @@ Run unsupervised_img_segmentation_and_object_detection.py
 Step 4:
 Run transfer_learning_clustering.py
 
+- Performs feature extraction using CNN, dimensionality reduction using PCA/UMAP and k-means clustering
+- Output plots are saved in a new folder called 'Plots'
+- Metadata file is modified to include cluster IDs from both methods
+
+Step 5 (Optional. However, required to generate time series plots shown in next step or for analysis on time series data):
+Run add_frame_number_metadata.py
+
+- Adds a column for frame number to metadata CSV file
+
+Step 6:
+Run Time_series_analysis.ipynb
+
+- To generate frame by frame analysis plots
+
+
 
