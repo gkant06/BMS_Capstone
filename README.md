@@ -10,6 +10,7 @@ One approach to achieve this is by generating pseudo-labels using machine learni
 
 
 2. Workflow
+
 ![Workflow](https://github.com/gkant06/BMS_Capstone/assets/112508461/5f306366-9124-4370-be5d-e05fc719d3c4)
 
 - BMS_capstone/classification is the classification pipeline for preprocessing of protein crystalization images
