@@ -1,5 +1,7 @@
 Overview:
 
+These steps were followed on one of the datasets HS-AFM antibody videos. However, can also be followed on other data as well.
+
 Step 1:
 Extract images from video clips.
 - .mp4 files: Use video_to_images.py in this directory
