@@ -1,4 +1,4 @@
-# BMS_Capstone
+# BMS_Capstone - Image Analysis Workflow
 
 In the field of pharmaceutical development, image analysis plays a crucial role in various applications such as microscopy and X-ray diffraction. However, traditional imaging approaches often rely on manual or semi-manual processes, which are time-consuming, prone to errors, and require specialized training. To address these challenges, machine learning techniques have emerged as a powerful tool to automate image analysis and interpretation. By leveraging the capabilities of machine learning algorithms, the processing of images can be streamlined, leading to faster results and reduced human error. Moreover, machine learning enables the development of reusable components that can be applied to diverse datasets and analysis tasks. Nevertheless, one of the key challenges in applying machine learning to image analysis is the lack of labeled or annotated data, as many existing techniques are based on supervised learning paradigms. In this context, unsupervised learning approaches become essential for tackling image analysis problems where ground truth or labeled data is limited.
 
